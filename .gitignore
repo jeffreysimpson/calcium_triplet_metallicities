@@ -111,3 +111,9 @@ data/*
 
 # Texpad
 .texpadtmp
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.out
