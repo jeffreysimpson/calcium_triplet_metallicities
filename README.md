@@ -5,7 +5,7 @@ I present a new empirical relationship for red giant branch stars between the ov
 ## Installation
 
 ```bash
-git clone
+git clone https://github.com/jeffreysimpson/calcium_triplet_metallicities.git
 ```
 
 ## Usage
