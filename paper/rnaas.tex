@@ -1,0 +1,244 @@
+%% rnaastex.cls is the classfile used for Research Notes. It is derived
+%% from aastex61.cls with a few tweaks to allow for the unique format required.
+%% (10/15/17)
+%%\documentclass{rnaastex}
+
+%% Better is to use the "RNAAS" style option in AASTeX v6.2
+%% (01/08/18)
+\documentclass[RNAAS]{aastex63}
+
+\usepackage{xspace}
+%% Define new commands here
+\newcommand{\feh}{\ensuremath{[\textrm{Fe}/\textrm{H}]}\xspace}
+\newcommand{\bprp}{\ensuremath{G_\textrm{BP}-G_\textrm{RP}}}
+\newcommand{\sumcat}{\ensuremath{\sum{(\mathrm{EW})_\mathrm{CaT}}}\xspace}
+\newcommand{\gaia}{\textit{Gaia}\xspace}
+
+\begin{document}
+
+\title{Empirical relationship between calcium triplet equivalent widths and \feh  using \gaia photometry}
+
+%% Note that the corresponding author command and emails has to come
+%% before everything else. Also place all the emails in the \email
+%% command instead of using multiple \email calls.
+\correspondingauthor{Jeffrey D. Simpson}
+\email{jeffrey.simpson@unsw.edu.au}
+
+%% The \author command can take an optional ORCID.
+\author[0000-0002-8165-2507]{Jeffrey D. Simpson}
+\affiliation{School of Physics, UNSW Sydney, NSW 2052, Australia}
+
+\begin{abstract}
+I present a new empirical relationship for red giant branch stars between the overall metallicity of the star and the sum of equivalent widths of the near-infrared calcium triplet (CaT) spectral lines. This method takes advantage of the all-sky photometry and astrometry of the \gaia mission, and the archival spectra from 2050 red giant branch stars from 18 globular clusters ($-0.69>\feh>-2.44$) acquired with the Anglo-Australian Telescope's AAOmega spectrograph.
+\end{abstract}
+
+%% Note that RNAAS manuscripts DO NOT have abstracts.
+%% See the online documentation for the full list of available subject
+%% keywords and the rules for their use.
+\keywords{stars: abundances --- globular clusters: general}
+
+%% Start the main body of the article. If no sections in the 
+%% research note leave the \section call blank to make the title.
+\section{Introdution}
+
+The calcium triplet (CaT) spectral lines in the near-infrared of giant stars has been widely used as a metallicity estimator for giant stars \citep[e.g.,][]{Armandroff1991,Carrera2013,Mauro2014,Starkenburg2010,Vasquez2018, Usher2019}.
+As the CaT lines are at the peak of the energy distribution of the bright, cool giants, and are broad, they can be measured with sufficient accuracy with moderate-resolution spectra.
+The strength of the CaT lines depends not only on the metallicity of the star, but also the effective temperature and surface gravity of the star. This contribution is typically removed by taking into account the luminosity of the star.
+In this work, I provide a new calibration that relates the strength of these CaT lines with the metallicity of the star, with the luminosity of the star derived from \gaia photometry. As with past works, this relies on observations of globular cluster stars.
+
+The full data set of reduced spectra, equivalent widths, radial velocities, and software used is available at 10.5281/zenodo.3785661.
+
+
+\section{Data}
+All spectral data in this work was acquired with the 1700D grating ($R\sim10000$; 8340--8840~\AA) and the red camera of moderate resolution, dual-beam spectrograph AAOmega \citep{Sharp2006} of the 3.9-metre Anglo-Australian Telescope, with light being fed to the spectrograph with the 392-fibre Two Degree Field (2dF) top-end \citep{Lewis2002}. I searched the AAT data archive and identified 18 globular clusters\footnote{NGC104, NGC6752, NGC6809, NGC288, NGC7099, NGC362, NGC6218, NGC4590, IC4499, NGC1904, ESO452-SC06, ESO280-SC12, NGC1851, NGC6624, NGC2298, Pal5, NGC5024, Terzan~8, NGC5053} with appropriate observations. The science and calibration data were downloaded from the AAO Data Central archive, and reduced using \textsc{2dfdr} \citep{AAOSoftwareTeam2015} with the default options for the 1700D grating. For stars with multiple spectral observations, the observation with the highest signal-to-noise was selected.
+
+The observed stars were postionally cross-matched with \gaia DR2 catalogue \citep{GaiaCollaboration2016,GaiaCollaboration2018a} using 5~arcsec search radius. In order for the star to be processed, I required that $\texttt{RUWE}<1.4$ \citep{Lindegren2018a} and $1.0+0.015(\bprp)^2 < \mathrm{\texttt{phot\_bp\_rp\_excess\_factor}} <1.3+0.06(\bprp)^2$ \citep{Evans2018a}.
+
+As well as the deep, precise all-sky photometry, the astrometric data from \gaia --- in particular proper motions --- is extremely useful for identifying members of clusters. This is especially crucial for clusters whose radial velocities are very similar to that of the bulk of stars along the line-of-sight. Observed red giant branch members were identified from their proper motions, location on the colour-magnitude diagram, and (if available) their Gaia radial velocity. 
+
+\section{Measurement of the equivalent widths and radial velocities}
+The sum of the equivalent widths of the calcium triplet lines (\sumcat) and the radial velocities of the stars were measured simultaneously. I fit the near-infrared calcium triplet (CaT) lines (8498.03, 8542.09, 8662.14 \AA) with a pseudo-Voigt function derived by \citet{Thompson1987}.
+This pseudo-Voigt function was implemented using \textsc{astropy} \texttt{Fittable1DModel} function. A \texttt{ThreePseudoVoigts} class was then constructed which tied the locations of the individual pseudo-Voigts together so that their wavelength separation was that of the actual CaT lines.
+
+For a given star the following procedure was followed. The observed spectrum was continuum normalized by first masking out the CaT lines, and then fitting a fifth-degree Chebychev polynomial to the masked spectrum. This normalization was refined with a straight line fit to the five continuum points defined by \citet{Carrera2013}. The \texttt{ThreePseudoVoigts} was then fit using a \texttt{SLSQPLSQFitter} to 'inverse' masked spectrum --- the spectrum of just the CaT line regions \citep[defined by][]{Carrera2013}. This fit returned the radial velocity of the star, and equivalent widths of the fitted pseudo-Voigt functions. The barycentric radial velocity was calculated using the \texttt{radial\_velocity\_correction} from \textsc{astropy}, with the RA and Dec of the star from Gaia, and the time of observation being the \texttt{UTMJD} value from the header from the spectrum FITS header.
+
+This procedure was repeated for 100 realizations of each reduced spectrum, with each realization having a random noise value added to each pixel, drawn from a Gaussian with a width equal to that pixel's noise value. For each star, I then found the 16th, 50th, and 84th percentile values of the distributions of radial velocities and equivalent widths.
+
+\section{Empirical relationship}
+For each cluster I used the distance modulus, reddening, and metallicity as compiled by \citet{Usher2019}. The apparent \gaia photometry of each star was de-reddened using the extinction coefficients from \citet{GaiaCollaboration2018b}. Figure \ref{fig:the_figure} shows the distributions of absolute G magnitudes and \sumcat for the 2050 observed stars.
+
+The functional form of the empirical relationship between \feh, absolute magnitude $G$, and \sumcat used in this work was
+\begin{equation}\label{eq:fit}
+	\feh = a + b\times G + c\times\sumcat + d\times\sumcat^2 + e\times G\times\sumcat.
+\end{equation}
+
+The best fitting coefficient values were estimated using posterior distribution found by the affine invariant ensemble Markov chain Monte Carlo (MCMC) sampler \textsc{emcee}. I ran each chain using 250 walkers for 1000 steps, discarding the first 400 burn-in steps, and thinned by about half the autocorrelation time. For each coefficient I found the 16th, 50th, and 84th percentiles of the samples in the marginalized distributions,
+\begin{equation}
+	a=-3.523_{-0.023}^{+0.023}, b=0.108_{-0.007}^{+0.006}, c=0.410_{-0.009}^{+0.009}, d=-0.007_{-0.001}^{+0.001},e=0.015_{-0.001}^{+0.001}.
+\end{equation}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[scale=1.0,angle=0]{figures/ew_comparison.pdf}
+\caption{Comparison between the summed equivalent widths of the CaII triplet (CaT) at of the 2050 red giant branch stars in 18 GCs observed by the AAOmega spectrograph. Each star is colour-coded by the literature \feh of the cluster \citep{Usher2019}. The dashed lines represent the inversion of Equation \ref{eq:fit}, i.e., they show the lines of constant \feh in this parameter space. \label{fig:the_figure}}
+\end{center}
+\end{figure}
+
+\acknowledgments
+
+{\it Funding:}
+{Australian Research Council Discovery Project DP180101791}
+
+{\it Facilities:} 
+{Anglo-Australian Telescope (AAOmega+2dF); AAO Data Central; Linux computational cluster Katana supported by the Faculty of Science, UNSW Australia}
+
+{\it Software:} 
+{\textsc{numpy} \citep{numpy}, 
+\textsc{scipy} \citep{SciPy1.0Contributors2020}, 
+\textsc{matplotlib} \citep{matplotlib}, 
+\textsc{pandas} \citep{pandas},
+\textsc{seaborn} \citep{seaborn},
+\textsc{astropy} \citep{TheAstropyCollaboration2018},
+\textsc{emcee} \citep{Foreman-Mackey2013a},
+\textsc{topcat} \citep{Taylor2005,Taylor2006}
+}
+
+
+\begin{thebibliography}{}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\providecommand{\url}[1]{\href{#1}{#1}}
+\providecommand{\dodoi}[1]{doi:~\href{http://doi.org/#1}{\nolinkurl{#1}}}
+\providecommand{\doeprint}[1]{\href{http://ascl.net/#1}{\nolinkurl{http://ascl.net/#1}}}
+\providecommand{\doarXiv}[1]{\href{https://arxiv.org/abs/#1}{\nolinkurl{https://arxiv.org/abs/#1}}}
+
+\bibitem[{{AAO Software Team}(2015)}]{AAOSoftwareTeam2015}
+{AAO Software Team}. 2015, 2dfdr: {{Data}} Reduction Software, Tech. rep.,
+  {Astrophysics Source Code Library}
+
+\bibitem[{Armandroff \& Da~Costa(1991)}]{Armandroff1991}
+Armandroff, T.~E., \& Da~Costa, G.~S. 1991, \aj, 101, 1329,
+  \dodoi{10.1086/115769}
+
+\bibitem[{Carrera {et~al.}(2013)Carrera, Pancino, Gallart, \& {del
+  Pino}}]{Carrera2013}
+Carrera, R., Pancino, E., Gallart, C., \& {del Pino}, A. 2013, \mnras, 434,
+  1681, \dodoi{10.1093/mnras/stt1126}
+
+\bibitem[{Evans {et~al.}(2018)}]{Evans2018a}
+Evans, D.~W., Riello, M., De~Angeli, F., {et~al.} 2018, \aap, 616, A4,
+  \dodoi{10.1051/0004-6361/201832756}
+%Evans, Riello, De~Angeli, Carrasco, Montegriffo,
+%  Fabricius, Jordi, Palaversa, Diener, Busso, Cacciari, {van Leeuwen}, Burgess,
+%  Davidson, Harrison, Hodgkin, Pancino, Richards, Altavilla,
+%  {Balaguer-N{\'u}{\~n}ez}, Barstow, Bellazzini, Brown, Castellani, Cocozza,
+%  De~Luise, Delgado, Ducourant, Galleti, Gilmore, Giuffrida, Holl, Kewley,
+%  Koposov, Marinoni, Marrese, Osborne, Piersimoni, Portell, Pulone, Ragaini,
+%  Sanna, Terrett, Walton, Wevers, \& Wyrzykowski}
+
+
+\bibitem[{{Foreman-Mackey} {et~al.}(2013){Foreman-Mackey}, Hogg, Lang, \&
+  Goodman}]{Foreman-Mackey2013a}
+{Foreman-Mackey}, D., Hogg, D.~W., Lang, D., \& Goodman, J. 2013, \pasp, 125,
+  306, \dodoi{10.1086/670067}
+
+\bibitem[{{Gaia Collaboration} {et~al.}(2016)}]{GaiaCollaboration2016}
+{Gaia Collaboration}, {et~al.} 2016, \aap, 595, A1,
+  \dodoi{10.1051/0004-6361/201629272}
+
+\bibitem[{{Gaia Collaboration}
+  {et~al.}(2018{\natexlab{a}})}]{GaiaCollaboration2018a}
+---. 2018{\natexlab{a}}, \aap, 616, A1, \dodoi{10.1051/0004-6361/201833051}
+
+\bibitem[{{Gaia Collaboration}
+  {et~al.}(2018{\natexlab{b}})}]{GaiaCollaboration2018b}
+---. 2018{\natexlab{b}}, \aap, 616, A10, \dodoi{10.1051/0004-6361/201832843}
+
+\bibitem[{Hunter(2007)}]{matplotlib}
+Hunter, J.~D. 2007, Computing in Science \& Engineering, 9, 90,
+  \dodoi{http://dx.doi.org/10.1109/MCSE.2007.55}
+
+\bibitem[{Lewis {et~al.}(2002)Lewis, Cannon, Taylor, Glazebrook, Bailey,
+  Baldry, Barton, Bridges, Dalton, Farrell, Gray, Lankshear, McCowage, Parry,
+  Sharples, Shortridge, Smith, Stevenson, Straede, Waller, Whittard, Wilcox, \&
+  Willis}]{Lewis2002}
+Lewis, I.~J., Cannon, R.~D., Taylor, K., {et~al.} 2002, \mnras, 333, 279,
+  \dodoi{10.1046/j.1365-8711.2002.05333.x}
+
+\bibitem[{Lindegren(2018)}]{Lindegren2018a}
+Lindegren, L. 2018, Re-Normalising the Astrometric Chi-Square in {{Gaia DR2}},
+  Tech. rep., {Lund Observatory}
+
+\bibitem[{Mauro {et~al.}(2014)Mauro, Moni~Bidin, Geisler, Saviane, Da~Costa,
+  {Gormaz-Matamala}, Vasquez, Chen{\'e}, Cohen, \& Dias}]{Mauro2014}
+Mauro, F., Moni~Bidin, C., Geisler, D., {et~al.} 2014, \aap, 563, A76,
+  \dodoi{10.1051/0004-6361/201322929}
+
+\bibitem[{Mckinney(2010)}]{pandas}
+Mckinney, W. 2010
+
+\bibitem[{{SciPy 1.0 Contributors} {et~al.}(2020)}]{SciPy1.0Contributors2020}
+{SciPy 1.0 Contributors}, {et~al.} 2020, Nature Methods, 17, 261,
+  \dodoi{10.1038/s41592-019-0686-2}
+
+\bibitem[{Sharp {et~al.}(2006)Sharp, Saunders, Smith, Churilov, Correll,
+  Dawson, Farrel, Frost, Haynes, Heald, Lankshear, Mayfield, Waller, \&
+  Whittard}]{Sharp2006}
+Sharp, R., Saunders, W., Smith, G., {et~al.} 2006, in {{SPIE Astronomical
+  Telescopes}} + {{Instrumentation}}, ed. I.~S. McLean \& M.~Iye, {Orlando,
+  Florida , USA}, 62690G, \dodoi{10.1117/12.671022}
+
+\bibitem[{Starkenburg {et~al.}(2010)Starkenburg, Hill, Tolstoy,
+  Gonz{\'a}lez~Hern{\'a}ndez, Irwin, Helmi, Battaglia, Jablonka, Tafelmeyer,
+  Shetrone, Venn, \& {de Boer}}]{Starkenburg2010}
+Starkenburg, E., Hill, V., Tolstoy, E., {et~al.} 2010, \aap, 513, A34,
+  \dodoi{10.1051/0004-6361/200913759}
+
+\bibitem[{Taylor(2005)}]{Taylor2005}
+Taylor, M.~B. 2005, in {{ADASS XIV}}, ed. P.~Shopbell, M.~Britton, \& R.~Ebert,
+  29
+
+\bibitem[{Taylor(2006)}]{Taylor2006}
+Taylor, M.~B. 2006, in {{ADASS XV}}, ed. C.~Gabriel, C.~Arviset, D.~Ponz, \&
+  S.~Enrique, 666
+
+\bibitem[{{The Astropy Collaboration}
+  {et~al.}(2018)}]{TheAstropyCollaboration2018}
+{The Astropy Collaboration}, {et~al.} 2018, \aj, 156, 123,
+  \dodoi{10.3847/1538-3881/aabc4f}
+
+\bibitem[{Thompson {et~al.}(1987)Thompson, Cox, \& Hastings}]{Thompson1987}
+Thompson, P., Cox, D.~E., \& Hastings, J.~B. 1987, Journal of Applied
+  Crystallography, 20, 79, \dodoi{10.1107/S0021889887087090}
+
+\bibitem[{Usher {et~al.}(2019)Usher, Beckwith, Bellstedt, Alabi, Chevalier,
+  Pastorello, Cerulo, Dalgleish, {Fraser-McKelvie}, Kamann, Penny, Foster,
+  McDermid, Schiavon, \& Villaume}]{Usher2019}
+Usher, C., Beckwith, T., Bellstedt, S., {et~al.} 2019, \mnras, 482, 1275,
+  \dodoi{10.1093/mnras/sty2611}
+
+\bibitem[{{van~der~Walt} {et~al.}(2011){van~der~Walt}, Colbert, \&
+  Varoquaux}]{numpy}
+{van~der~Walt}, S., Colbert, S.~C., \& Varoquaux, G. 2011, Computing in Science
+  \& Engineering, 13, 22, \dodoi{http://dx.doi.org/10.1109/MCSE.2011.37}
+
+\bibitem[{V{\'a}squez {et~al.}(2018)V{\'a}squez, Saviane, Held, Da~Costa, Dias,
+  Gullieuszik, Barbuy, Ortolani, \& Zoccali}]{Vasquez2018}
+V{\'a}squez, S., Saviane, I., Held, E.~V., {et~al.} 2018, \aap, 619, A13,
+  \dodoi{10.1051/0004-6361/201833525}
+
+\bibitem[{Waskom {et~al.}(2016)
+%Waskom, Botvinnik, O'Kane, Hobson, Halchenko,
+%  Lukauskas, Warmenhoven, Cole, Hoyer, Vanderplas, gkunter, Villalba, Quintero,
+%  Martin, Miles, Meyer, Augspurger, Yarkoni, Bachant, Evans, Fitzgerald, Nagy,
+%  Ziegler, Megies, Wehner, St-Jean, Coelho, Hitz, Lee, \& Rocher
+  }]{seaborn}
+Waskom, M., Botvinnik, O., O'Kane, D., {et~al.} 2016, seaborn: v0.7.0 (January
+  2016), \dodoi{10.5281/zenodo.45133}
+
+\end{thebibliography}
+
+%
+%\bibliography{library_.bib}{}
+%\bibliographystyle{aasjournal}
+
+\end{document}
