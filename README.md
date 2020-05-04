@@ -8,6 +8,8 @@ I present a new empirical relationship for red giant branch stars between the ov
 git clone https://github.com/jeffreysimpson/calcium_triplet_metallicities.git
 ```
 
+requirements.txt contains the particular versions of external packages that I used.
+
 ## Usage
 
 ```bash
